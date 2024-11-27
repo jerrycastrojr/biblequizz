@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>biblequiz</title>
+  
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bible Quiz Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Open+Sans:wght@300;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background: linear-gradient(to bottom, #c4e0e5, #4ca1af);
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      font-size: 2.8em;
+      margin-bottom: 20px;
+      color: #f9d342;
+    }
+
+    h2 {
+      font-size: 1.5em;
+      margin-bottom: 20px;
+      color: #f9d250;
+    }
+
+    button {
+      padding: 12px 20px;
+      margin: 10px;
+      background-color: #007bff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.0em;
+      transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    button:disabled {
+      background-color: gray;
+      cursor: not-allowed;
+    }
+
+    #message.correct {
+      font-size: 1.4em;
+      color: #28a745; /* Green for Correct */
+      margin-top: 10px;
+    }
+
+    #message.wrong {
+      font-size: 1.4em;
+      color: #dc4000; /* Red for Wrong */
+      margin-top: 10px;
+    }
+
+    #verse {
+      margin: 15px 0;
+      font-style: italic;
+      font-size: 1.3em;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin: 10px 0;
+  
+    }
+
+    #music-controls button {
+      background-color: #800000;
+      color: white;
+    }
+
+    #music-controls button:hover {
+      background-color: #550000;
+    }
+    
+    #question {
+  margin: 15px 0;
+  font-style: italic;
+  font-size: 1.3em; /* Updated font size */
+}
+    
+  </style>
+</head>
+  
+<body>
+  <audio id="background-music" loop autoplay>
+    <source src="https://www.bensound.com/bensound-music/bensound-ukulele.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+  <audio id="click-sound">
+    <source src="https://assets.mixkit.co/sfx/preview/mixkit-classic-click-1117.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <div class="container">
+    <h1>BIBLE QUIZ</h1>
+    <h2>by: Jerry C.</h2>
+    <div id="mode-buttons" class="buttons">
+      <button onclick="playClickSound(); startGame()">Start Game</button>
+    </div>
+    
+    
+    <div id="category-buttons" class="buttons" style="display: none;">
+     <p id="category-instruction">Select Category:</p>
+    
+      <button onclick="playClickSound(); selectCategory('Person')">Person</button>
+      <button onclick="playClickSound(); selectCategory('Place')">Place</button>
+      <button onclick="playClickSound(); selectCategory('Event')">Event</button>
+      <button onclick="playClickSound(); selectCategory('Others')">Others</button>
+    </div>
+    <div id="question-container" style="display: none;">
+      <p id="question"></p>
+      <div id="options" class="buttons"></div>
+      <p id="message"></p>
+      <p id="verse"></p>
+      <div id="decision-buttons" class="buttons" style="display: none;">
+        <button onclick="playClickSound(); nextQuestion()">Continue</button>
+        <button onclick="playClickSound(); playAgain()">Restart Game</button>
+        <button onclick="playClickSound(); exitGame()">Exit Game</button>
+      </div>
+    </div>
+    <div id="end-buttons" class="buttons" style="display: none;">
+      <button onclick="playClickSound(); playAgain()">Restart Game</button>
+      <button onclick="playClickSound(); exitGame()">Exit Game</button>
+    </div>
+    <div id="music-controls" class="buttons">
+      <button id="music-toggle" onclick="playClickSound(); toggleMusic()">Play Music</button>
+    </div>
+  </div>
+
+  <script>
+    
+    const questionsByCategory = {
+      Person: [
+        { question: "Who was the first man created by God?", answers: ["Eve", "Adam", "Cain", "Noah"], correct: "Adam", verse: "Genesis 2:7" },
+        { question: "Who betrayed Jesus?", answers: ["Peter", "Judas", "Thomas", "John"], correct: "Judas", verse: "Matthew 26:14-16" },
+               { question: "Who was the first man created by God?", answers: ["Eve", "Adam", "Cain", "Noah"], correct: "Adam", verse: "Genesis 2:7", category: "Person" },
+  { question: "Who built the Ark?", answers: ["Noah", "Moses", "Abraham", "David"], correct: "Noah", verse: "Genesis 6:14", category: "Person" },
+  { question: "Who is known as the father of many nations?", answers: ["Isaac", "Jacob", "Abraham", "Joseph"], correct: "Abraham", verse: "Genesis 17:4-5", category: "Person" },
+  { question: "Who was swallowed by a great fish?", answers: ["Jonah", "Job", "Peter", "Paul"], correct: "Jonah", verse: "Jonah 1:17", category: "Person" },
+  { question: "Who betrayed Jesus for 30 pieces of silver?", answers: ["Judas Iscariot", "Peter", "Thomas", "John"], correct: "Judas Iscariot", verse: "Matthew 26:14-16", category: "Person" },
+  { question: "Who was the strongest man in the Bible?", answers: ["David", "Saul", "Absalom", "Samson"], correct: "Samson", verse: "Judges 16:17", category: "Person" },
+  { question: "Who led the Israelites out of Egypt?", answers: ["Aaron", "Moses", "Joshua", "Elijah"], correct: "Moses", verse: "Exodus 3:10", category: "Person" },
+  { question: "Who interpreted Pharaoh's dreams?", answers: ["Joseph", "Daniel", "Aaron", "Moses"], correct: "Joseph", verse: "Genesis 41:15-16", category: "Person" },
+  { question: "Who killed Goliath?", answers: ["David", "Saul", "Jonathan", "Absalom"], correct: "David", verse: "1 Samuel 17:49", category: "Person" },
+  { question: "Who was the first woman created by God?", answers: ["Mary", "Sarah", "Eve", "Ruth"], correct: "Eve", verse: "Genesis 2:22", category: "Person" },
+  { question: "Who was the disciple that walked on water with Jesus?", answers: ["John", "Peter", "James", "Andrew"], correct: "Peter", verse: "Matthew 14:29", category: "Person" },
+  { question: "Who was the prophet that confronted King Ahab?", answers: ["Elijah", "Elisha", "Isaiah", "Jeremiah"], correct: "Elijah", verse: "1 Kings 18:17-18", category: "Person" },
+  { question: "Who was known for her loyalty to her mother-in-law?", answers: ["Esther", "Naomi", "Deborah", "Ruth"], correct: "Ruth", verse: "Ruth 1:16", category: "Person" },
+  { question: "Who was the mother of Jesus?", answers: ["Mary", "Elizabeth", "Martha", "Anna"], correct: "Mary", verse: "Luke 1:30-31", category: "Person" },
+  { question: "Who denied Jesus three times?", answers: ["Peter", "John", "Judas", "James"], correct: "Peter", verse: "Luke 22:61", category: "Person" },
+  { question: "Who was the apostle known for his doubt?", answers: ["Thomas", "Paul", "James", "Peter"], correct: "Thomas", verse: "John 20:24-25", category: "Person" },
+  { question: "Who was the first martyr in the Bible?", answers: ["Peter", "Stephen", "Paul", "John"], correct: "Stephen", verse: "Acts 7:59", category: "Person" },
+  { question: "Who was chosen to replace Judas Iscariot?", answers: ["Paul", "Matthias", "Barnabas", "Silas"], correct: "Matthias", verse: "Acts 1:26", category: "Person" },
+  { question: "Who wrote most of the New Testament?", answers: ["Peter", "John", "Luke", "Paul"], correct: "Paul", verse: "2 Timothy 3:16", category: "Person" },
+  { question: "Who is known as the weeping prophet?", answers: ["Jeremiah", "Isaiah", "Ezekiel", "Daniel"], correct: "Jeremiah", verse: "Jeremiah 9:1", category: "Person" },
+  { question: "Who was the first king of Israel?", answers: ["David", "Solomon", "Samuel", "Saul"], correct: "Saul", verse: "1 Samuel 10:1", category: "Person" },
+  { question: "Who anointed Saul as king?", answers: ["Nathan", "Eli", "Samuel", "Elijah"], correct: "Samuel", verse: "1 Samuel 10:1", category: "Person" },
+  { question: "Who was the wife of Abraham?", answers: ["Sarah", "Hagar", "Rebekah", "Rachel"], correct: "Sarah", verse: "Genesis 17:15", category: "Person" },
+  { question: "Who was known for his wisdom?", answers: ["David", "Moses", "Solomon", "Daniel"], correct: "Solomon", verse: "1 Kings 3:12", category: "Person" },
+  { question: "Who was the brother of Moses?", answers: ["Caleb", "Aaron", "Joshua", "Hur"], correct: "Aaron", verse: "Exodus 4:14", category: "Person" }
+
+      ],
+        
+      Place: [
+        { question: "Where was Jesus born?", answers: ["Nazareth", "Jerusalem", "Bethlehem", "Galilee"], correct: "Bethlehem", verse: "Luke 2:4-7" },
+        { question: "What is the first garden mentioned in the Bible?", answers: ["Eden", "Gethsemane", "Olives", "Zion"], correct: "Eden", verse: "Genesis 2:8" },
+        { question: "What city was the birthplace of Jesus?", answers: ["Nazareth", "Jerusalem", "Capernaum", "Bethlehem"], correct: "Bethlehem", verse: "Luke 2:4-7", category: "Place" },
+      
+       { question: "Where did Jesus perform His first miracle?", answers: ["Nazareth", "Cana", "Jerusalem", "Bethlehem"], correct: "Cana", verse: "John 2:1-11", category: "Place" },
+  { question: "Where was Jesus born?", answers: ["Bethlehem", "Nazareth", "Jerusalem", "Capernaum"], correct: "Bethlehem", verse: "Luke 2:4-7", category: "Place" },
+  { question: "Where did Moses receive the Ten Commandments?", answers: ["Mount Zion", "Mount Carmel", "Mount Nebo", "Mount Sinai"], correct: "Mount Sinai", verse: "Exodus 19:20", category: "Place" },
+  { question: "Where did the walls fall after being marched around?", answers: ["Ai", "Bethel", "Jericho", "Gibeon"], correct: "Jericho", verse: "Joshua 6:20", category: "Place" },
+  { question: "Where did Jesus walk on water?", answers: ["Jordan River", "Sea of Galilee", "Dead Sea", "Red Sea"], correct: "Sea of Galilee", verse: "Matthew 14:25-26", category: "Place" },
+  { question: "Where did Noah's ark come to rest?", answers: ["Mount Sinai", "Mount Ararat", "Mount Carmel", "Mount Zion"], correct: "Mount Ararat", verse: "Genesis 8:4", category: "Place" },
+  { question: "Where was Paul imprisoned for preaching the Gospel?", answers: ["Philippi", "Rome", "Corinth", "Ephesus"], correct: "Rome", verse: "Acts 28:16", category: "Place" },
+  { question: "Where did Elijah confront the prophets of Baal?", answers: ["Mount Carmel", "Mount Sinai", "Mount Zion", "Mount Tabor"], correct: "Mount Carmel", verse: "1 Kings 18:19", category: "Place" },
+  { question: "Where was Jesus baptized?", answers: ["Sea of Galilee", "Dead Sea", "Nile River", "Jordan River"], correct: "Jordan River", verse: "Matthew 3:13", category: "Place" },
+  { question: "Where did God confuse the language of the people?", answers: ["Jericho", "Bethel", "Tower of Babel", "Nineveh"], correct: "Tower of Babel", verse: "Genesis 11:9", category: "Place" },
+  { question: "Where did the Apostle John write the Book of Revelation?", answers: ["Patmos", "Ephesus", "Antioch", "Jerusalem"], correct: "Patmos", verse: "Revelation 1:9", category: "Place" },
+  { question: "Where did the disciples first receive the Holy Spirit?", answers: ["Bethlehem", "Antioch", "Nazareth", "Jerusalem"], correct: "Jerusalem", verse: "Acts 2:1-4", category: "Place" },
+  { question: "Where did Jesus pray before His arrest?", answers: ["Golgotha", "Capernaum", "Nazareth", "Gethsemane"], correct: "Gethsemane", verse: "Matthew 26:36", category: "Place" },
+  { question: "Where did Jonah try to flee from God's command?", answers: ["Tarshish", "Nineveh", "Jerusalem", "Babylon"], correct: "Tarshish", verse: "Jonah 1:3", category: "Place" },
+  { question: "Where did Jesus meet the Samaritan woman?", answers: ["Jordan River", "Jacob's Well", "Sea of Galilee", "Mount Gerizim"], correct: "Jacob's Well", verse: "John 4:6", category: "Place" },
+  { question: "Where was the Apostle Paul born?", answers: ["Tarsus", "Jerusalem", "Antioch", "Rome"], correct: "Tarsus", verse: "Acts 22:3", category: "Place" },
+  { question: "Where was Lazarus raised from the dead?", answers: ["Bethlehem", "Jericho", "Bethany", "Nazareth"], correct: "Bethany", verse: "John 11:43-44", category: "Place" },
+  { question: "Where were the Israelites enslaved for 400 years?", answers: ["Babylon", "Canaan", "Philistia", "Egypt"], correct: "Egypt", verse: "Exodus 1:11-14", category: "Place" },
+  { question: "Where was Solomon's Temple built?", answers: ["Bethlehem", "Nazareth", "Jerusalem", "Hebron"], correct: "Jerusalem", verse: "1 Kings 6:1", category: "Place" },
+  { question: "Where was the Apostle Peter crucified?", answers: ["Rome", "Jerusalem", "Antioch", "Philippi"], correct: "Rome", verse: "Historical tradition", category: "Place" },
+  { question: "Where did the Israelites cross the sea on dry ground?", answers: ["Jordan River", "Dead Sea", "Red Sea", "Sea of Galilee"], correct: "Red Sea", verse: "Exodus 14:21-22", category: "Place" },
+  { question: "Where did God promise Abraham a land for his descendants?", answers: ["Egypt", "Canaan", "Babylon", "Jericho"], correct: "Canaan", verse: "Genesis 12:7", category: "Place" },
+  { question: "Where did the prodigal son return to?", answers: ["Jerusalem", "His father's house", "Nazareth", "Capernaum"], correct: "His father's house", verse: "Luke 15:20", category: "Place" },
+  { question: "Where did Philip baptize the Ethiopian eunuch?", answers: ["On the road to Gaza", "Jordan River", "Sea of Galilee", "Bethsaida"], correct: "On the road to Gaza", verse: "Acts 8:26-39", category: "Place" },
+  { question: "Where did God call Moses from a burning bush?", answers: ["Mount Sinai", "Mount Carmel", "Mount Horeb", "Mount Zion"], correct: "Mount Horeb", verse: "Exodus 3:1-2", category: "Place" }
+
+      ],
+        
+      Event: [
+        { question: "What was the first miracle of Jesus?", answers: ["Healing the blind", "Turning water into wine", "Walking on water", "Feeding 5000 people"], correct: "Turning water into wine", verse: "John 2:1-11" },
+        { question: "How many days did it rain during the flood?", answers: ["30", "40", "50", "60"], correct: "40", verse: "Genesis 7:12" },
+        { question: "What event caused the destruction of Sodom and Gomorrah?", answers: ["Fire and brimstone", "Earthquake", "Flood", "Plague"], correct: "Fire and brimstone", verse: "Genesis 19:24", category: "Event" },
+  { question: "What event marked the beginning of creation?", answers: ["God said, 'Let there be light.'", "The separation of land and sea", "Creation of man", "Creation of the sun and moon"], correct: "God said, 'Let there be light.'", verse: "Genesis 1:3", category: "Event" },
+  { question: "What event led to the Israelites' exodus from Egypt?", answers: ["Parting of the Red Sea", "Burning bush", "Golden calf", "The death of the firstborn"], correct: "The death of the firstborn", verse: "Exodus 12:29-30", category: "Event" },
+  { question: "What event led to the fall of Jericho?", answers: ["Earthquake", "Burning of the city", "Marching and shouting", "Flood"], correct: "Marching and shouting", verse: "Joshua 6:20", category: "Event" },
+  { question: "What event marked Jesus' resurrection?", answers: ["His appearance to Mary Magdalene", "His ascension", "The Last Supper", "The empty tomb"], correct: "The empty tomb", verse: "Matthew 28:6", category: "Event" },
+  { question: "What event caused Peter to deny Jesus?", answers: ["The Last Supper", "Jesus' trial", "The crucifixion", "Jesus' arrest"], correct: "Jesus' trial", verse: "Matthew 26:69-75", category: "Event" },
+  { question: "What event caused the people to speak different languages?", answers: ["The Tower of Babel", "The Pentecost", "The Exodus", "The captivity in Babylon"], correct: "The Tower of Babel", verse: "Genesis 11:7-9", category: "Event" },
+  { question: "What event happened at Pentecost?", answers: ["Jesus' ascension", "The Last Supper", "The coming of the Holy Spirit", "Paul's conversion"], correct: "The coming of the Holy Spirit", verse: "Acts 2:1-4", category: "Event" },
+  { question: "What event confirmed Jesus as the Messiah to John the Baptist?", answers: ["The voice from heaven", "His baptism", "The dove descending", "The Transfiguration"], correct: "The voice from heaven", verse: "Matthew 3:16-17", category: "Event" },
+  { question: "What event destroyed the firstborn of Egypt?", answers: ["The tenth plague", "The fifth plague", "The plague of locusts", "The splitting of the Red Sea"], correct: "The tenth plague", verse: "Exodus 12:29", category: "Event" },
+  { question: "What event occurred on Mount Carmel with Elijah?", answers: ["The giving of the Ten Commandments", "Fire consuming the altar", "The parting of the Red Sea", "Jesus' Transfiguration"], correct: "Fire consuming the altar", verse: "1 Kings 18:38", category: "Event" },
+  { question: "What event is described as the Great Flood?", answers: ["Noah's ark", "Crossing the Red Sea", "Jesus' baptism", "The Exodus"], correct: "Noah's ark", verse: "Genesis 7:17", category: "Event" },
+  { question: "What event happened at the Transfiguration?", answers: ["The Last Supper", "Jesus' appearance changed", "The crucifixion", "The coming of the Holy Spirit"], correct: "Jesus' appearance changed", verse: "Matthew 17:2", category: "Event" },
+  { question: "What event marked Jesus' entry into Jerusalem?", answers: ["The Last Supper", "Palm Sunday", "The Crucifixion", "The Resurrection"], correct: "Palm Sunday", verse: "Matthew 21:8-9", category: "Event" },
+  { question: "What event led to the conversion of Paul?", answers: ["A vision on the road to Damascus", "A sermon by Peter", "The Pentecost", "The death of Stephen"], correct: "A vision on the road to Damascus", verse: "Acts 9:3-6", category: "Event" },
+  { question: "What event involved the feeding of 5,000?", answers: ["Five loaves and two fish", "Manna from heaven", "The Last Supper", "The wedding at Cana"], correct: "Five loaves and two fish", verse: "Matthew 14:17-21", category: "Event" },
+  { question: "What event caused Peter to walk on water?", answers: ["Jesus walking on water", "The storm calming", "The Transfiguration", "The feeding of the 5,000"], correct: "Jesus walking on water", verse: "Matthew 14:29", category: "Event" },
+  { question: "What event occurred at the Last Supper?", answers: ["The Transfiguration", "The Pentecost", "Jesus broke bread and shared wine", "The arrest of Jesus"], correct: "Jesus broke bread and shared wine", verse: "Luke 22:19-20", category: "Event" },
+  { question: "What event marked the giving of the Ten Commandments?", answers: ["The burning bush", "Crossing the Red Sea", "God speaking on Mount Sinai", "The fall of Jericho"], correct: "God speaking on Mount Sinai", verse: "Exodus 20:1-17", category: "Event" },
+  { question: "What event showed God's power over Baal?", answers: ["The burning bush", "The parting of the Red Sea", "The fall of Jericho", "Fire on Mount Carmel"], correct: "Fire on Mount Carmel", verse: "1 Kings 18:24", category: "Event" },
+  { question: "What event caused the Israelites to wander for 40 years?", answers: ["The Red Sea crossing", "The golden calf", "Building the tabernacle", "Disobedience and lack of faith"], correct: "Disobedience and lack of faith", verse: "Numbers 14:33-34", category: "Event" },
+  { question: "What event involved Daniel in the lions' den?", answers: ["His vision of the future", "His interpretation of dreams", "His refusal to stop praying", "His exile to Babylon"], correct: "His refusal to stop praying", verse: "Daniel 6:10-22", category: "Event" },
+  { question: "What event involved Jesus turning water into wine?", answers: ["The Last Supper", "The feeding of the 5,000", "The resurrection", "The wedding at Cana"], correct: "The wedding at Cana", verse: "John 2:1-11", category: "Event" },
+  { question: "What event marked the beginning of Jesus' ministry?", answers: ["His baptism", "His birth", "The Last Supper", "The Transfiguration"], correct: "His baptism", verse: "Matthew 3:13-17", category: "Event" },
+  { question: "What event involved the defeat of Goliath?", answers: ["David slaying him with a sling", "Samson's strength", "Elijah's confrontation", "Joshua's conquest"], correct: "David slaying him with a sling", verse: "1 Samuel 17:49", category: "Event" }
+      ],
+      Others: [
+        { question: "What is the shortest verse in the Bible?", answers: ["Jesus wept.", "God is love.", "The Lord is my shepherd.", "Love one another."], correct: "Jesus wept.", verse: "John 11:35" },
+        { question: "How many books are in the Bible?", answers: ["60", "62", "66", "70"], correct: "66", verse: "Entire Bible" },
+        { question: "Which book is known as the Song of Songs?", answers: ["Psalms", "Song of Solomon", "Proverbs", "Ecclesiastes"], correct: "Song of Solomon", verse: "Song of Solomon 1:1", category: "Others" },
+  { question: "Which book in the Bible has the most chapters?", answers: ["Isaiah", "Psalms", "Genesis", "Jeremiah"], correct: "Psalms", verse: "Psalms 1:1", category: "Others" },
+  { question: "What is the shortest verse in the Bible?", answers: ["God is love", "Rejoice always", "Jesus wept", "Pray without ceasing"], correct: "Jesus wept", verse: "John 11:35", category: "Others" },
+  { question: "Who is the oldest man recorded in the Bible?", answers: ["Adam", "Noah", "Methuselah", "Enoch"], correct: "Methuselah", verse: "Genesis 5:27", category: "Others" },
+  { question: "What was Paul's name before his conversion?", answers: ["Peter", "Silas", "Stephen", "Saul"], correct: "Saul", verse: "Acts 9:1", category: "Others" },
+  { question: "Who wrote most of the Psalms?", answers: ["David", "Solomon", "Asaph", "Moses"], correct: "David", verse: "Psalms 1:1", category: "Others" },
+  { question: "Who was known for interpreting dreams in Egypt?", answers: ["Daniel", "Moses", "Elijah", "Joseph"], correct: "Joseph", verse: "Genesis 41:14-16", category: "Others" },
+  { question: "Which book is considered the first Gospel written?", answers: ["Mark", "Matthew", "Luke", "John"], correct: "Mark", verse: "Mark 1:1", category: "Others" },
+  { question: "What is the longest book in the Bible?", answers: ["Psalms", "Jeremiah", "Isaiah", "Genesis"], correct: "Psalms", verse: "Psalms 1:1", category: "Others" },
+  { question: "What was the first miracle performed by Jesus?", answers: ["Healing a blind man", "Raising Lazarus", "Turning water into wine", "Feeding the 5,000"], correct: "Turning water into wine", verse: "John 2:1-11", category: "Others" },
+  { question: "What is the first book of the Bible?", answers: ["Exodus", "Leviticus", "Genesis", "Numbers"], correct: "Genesis", verse: "Genesis 1:1", category: "Others" },
+  { question: "What is the last book of the Bible?", answers: ["Revelation", "Jude", "Malachi", "John"], correct: "Revelation", verse: "Revelation 1:1", category: "Others" },
+  { question: "Who led the Israelites into the Promised Land?", answers: ["Moses", "Joshua", "Aaron", "Caleb"], correct: "Joshua", verse: "Joshua 1:1-3", category: "Others" },
+  { question: "Which book is a collection of wise sayings?", answers: ["Ecclesiastes", "Job", "Psalms", "Proverbs"], correct: "Proverbs", verse: "Proverbs 1:1", category: "Others" },
+  { question: "Who was swallowed by a great fish?", answers: ["Jonah", "Peter", "Paul", "Elijah"], correct: "Jonah", verse: "Jonah 1:17", category: "Others" },
+  { question: "Who was the first king of Israel?", answers: ["Saul", "David", "Solomon", "Samuel"], correct: "Saul", verse: "1 Samuel 9:15-17", category: "Others" },
+  { question: "What is the Golden Rule in the Bible?", answers: ["Love your neighbor as yourself", "Honor your father and mother", "Do not judge", "Do unto others as you would have them do unto you"], correct: "Do unto others as you would have them do unto you", verse: "Matthew 7:12", category: "Others" },
+  { question: "Who betrayed Jesus for 30 pieces of silver?", answers: ["Peter", "John", "Judas Iscariot", "Thomas"], correct: "Judas Iscariot", verse: "Matthew 26:15", category: "Others" },
+  { question: "What is the greatest commandment according to Jesus?", answers: ["Honor your father and mother", "Do not steal", "Remember the Sabbath", "Love the Lord your God"], correct: "Love the Lord your God", verse: "Matthew 22:37-38", category: "Others" },
+  { question: "What was the occupation of Luke, the Gospel writer?", answers: ["Tax collector", "Physician", "Fisherman", "Carpenter"], correct: "Physician", verse: "Colossians 4:14", category: "Others" },
+  { question: "Who is considered the father of faith?", answers: ["Abraham", "Moses", "Isaac", "Jacob"], correct: "Abraham", verse: "Romans 4:16", category: "Others" },
+  { question: "What is the symbol of the Holy Spirit?", answers: ["Lion", "Lamb", "Dove", "Cross"], correct: "Dove", verse: "Matthew 3:16", category: "Others" },
+  { question: "Who received the Ten Commandments?", answers: ["Moses", "Abraham", "Noah", "Joshua"], correct: "Moses", verse: "Exodus 20:1-17", category: "Others" },
+  { question: "Which book contains the Beatitudes?", answers: ["Matthew", "Mark", "Luke", "John"], correct: "Matthew", verse: "Matthew 5:3-12", category: "Others" },
+  { question: "What does the name Emmanuel mean?", answers: ["Prince of peace", "King of kings", "God with us", "God is love"], correct: "God with us", verse: "Matthew 1:23", category: "Others" }
+      ]    
+    };
+
+    let currentCategory = "";
+    let currentQuestionIndex = 0;
+    let score = 0;
+    const backgroundMusic = document.getElementById("background-music");
+    const clickSound = document.getElementById("click-sound");
+
+    function playClickSound() {
+      clickSound.play();
+    }
+
+    function toggleMusic() {
+      const musicToggle = document.getElementById("music-toggle");
+      if (backgroundMusic.paused) {
+        backgroundMusic.play();
+        musicToggle.innerText = "Pause Music";
+      } else {
+        backgroundMusic.pause();
+        musicToggle.innerText = "Play Music";
+      }
+    }
+
+    function startGame() {
+      document.getElementById("mode-buttons").style.display = "none";
+      document.getElementById("category-buttons").style.display = "flex";
+    }
+
+    function selectCategory(category) {
+      currentCategory = category;
+      currentQuestionIndex = 0;
+      score = 0;
+      document.getElementById("category-buttons").style.display = "none";
+      document.getElementById("question-container").style.display = "block";
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      const questions = questionsByCategory[currentCategory];
+      const questionData = questions[currentQuestionIndex];
+      document.getElementById("question").innerText = questionData.question;
+
+      const optionsDiv = document.getElementById("options");
+      optionsDiv.innerHTML = "";
+
+      questionData.answers.forEach(answer => {
+        const button = document.createElement("button");
+        button.innerText = answer;
+        button.onclick = () => selectAnswer(answer);
+        optionsDiv.appendChild(button);
+      });
+
+      document.getElementById("message").innerText = "";
+      document.getElementById("verse").innerText = "";
+      document.getElementById("decision-buttons").style.display = "none";
+    }
+
+    function selectAnswer(selectedAnswer) {
+      const questions = questionsByCategory[currentCategory];
+      const questionData = questions[currentQuestionIndex];
+
+      const allButtons = document.getElementById("options").getElementsByTagName("button");
+      Array.from(allButtons).forEach(button => {
+        button.disabled = true;
+        button.style.opacity = "0.6";
+      });
+
+      const messageElement = document.getElementById("message");
+      if (selectedAnswer === questionData.correct) {
+        messageElement.innerText = "Correct!";
+        messageElement.className = "correct";
+        score++;
+      } else {
+        messageElement.innerText = `Wrong! The correct answer was: ${questionData.correct}.`;
+        messageElement.className = "wrong";
+      }
+
+      document.getElementById("verse").innerText = questionData.verse;
+      document.getElementById("decision-buttons").style.display = "flex";
+    }
+
+    function nextQuestion() {
+      const questions = questionsByCategory[currentCategory];
+      currentQuestionIndex++;
+      if (currentQuestionIndex >= questions.length) {
+        document.getElementById("question").innerText = "Quiz Completed!";
+        document.getElementById("options").innerHTML = "";
+        document.getElementById("message").innerText = `Your score is ${score}/${questions.length}.`;
+        document.getElementById("verse").innerText = "";
+        document.getElementById("decision-buttons").style.display = "none";
+        document.getElementById("end-buttons").style.display = "flex";  // End buttons shown after all questions
+      } else {
+        loadQuestion();
+      }
+    }
+
+   function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+function playAgain() {
+  // Shuffle questions in each category
+  Object.keys(questionsByCategory).forEach(category => {
+    shuffleArray(questionsByCategory[category]);
+  });
+
+  currentQuestionIndex = 0;
+  score = 0;
+  document.getElementById("end-buttons").style.display = "none";
+  document.getElementById("category-buttons").style.display = "flex";
+  document.getElementById("question-container").style.display = "none";
+}
+
+
+    function exitGame() {
+      alert("Thank you for playing! Exiting game...");
+      location.reload();
+    }
+    
+  </script>
+</body>
+</html>
+<!-- partial -->
+  
+</body>
+</html>
